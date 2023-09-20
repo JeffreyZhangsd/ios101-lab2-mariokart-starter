@@ -64,9 +64,43 @@ class ViewController: UIViewController,
     // Exercise 1: Assign the result of MushroomGenerator.maybeGenerateMushroomPowerup()
     // to a variable. Print something if it's not nil
     // ...
+//      let res = MushroomGenerator.maybeGenerateMushroomPowerup()!
+//      if res != nil {
+//          print("something")
+//      } else {
+//          print("No powerup")
+//      }
+      
     
     // Exercise 2: Use the powerup on Mario using the useMushroomPowerupOnMario function
     // ...
+    // useMushroomPowerupOnMario(powerup: res)
+      
+    // Different ways:
+      /*
+      // check if non-nil before assigning to res, and then running logic
+      if let res = MushroomGenerator.maybeGenerateMushroomPowerup() {
+          useMushroomPowerupOnMario(powerup: res)
+      }
+      
+      // check if non-nil after assigning, then unwrap to use powerup
+      let res = MushroomGenerator.maybeGenerateMushroomPowerup()
+      if res != nil {
+          useMushroomPowerupOnMario(powerup: res!)
+      }
+      */
+      
+      // using a guard to unwrap an optional, return if error
+      guard let res = MushroomGenerator.maybeGenerateMushroomPowerup() else {
+          // handle error case here
+          print("no powerup")
+          return
+      }
+      print("powerup")
+      // runs powerup after not encountering error
+      useMushroomPowerupOnMario(powerup: res)
+      
+      // we can use guards to handle multiple optionals without having to nest a lot
   }
   
   private func useMushroomPowerupOnMario(powerup: MushroomPowerup) {
@@ -82,7 +116,32 @@ class ViewController: UIViewController,
   
   // Exercise 3: Decipher the mystery box and apply the correct effect on mario
   private func decipher(mysteryBox: MysteryBox) {
-    
+      // print(mysteryBox.mysteryEffect)
+      // assign result to const effect dict, cast as a dictionary -> [String: String]
+      guard let effectDict = mysteryBox.mysteryEffect as? [String: String] else {
+          assertionFailure("expecting dict type")
+          return
+      }
+      // check if an effect value is non-nil, then assign to effect
+      guard let effect = effectDict["effect"] else {
+          assertionFailure("expecting string")
+          return
+      }
+      // perform effect for each effect
+      if effect == "translate" {
+          translate(kart: kartView1, by: view.bounds.width)
+      } else if effect == "rotate" {
+          rotate(kart: kartView1)
+      } else if effect == "scale" {
+          scale(kart: kartView1)
+      } else {
+          assertionFailure("effect not in effect dict")
+      }
+      
+      // force cast, used if we KNOW that the value is of a certain type, else app will crash
+      // let effectDict = mysteryBox.mysteryEffect as! [String: String]
+      // force unwrap
+      // let effect = effectDict["effect"]!
   }
   
   private func translate(kart: UIView?,
@@ -132,17 +191,39 @@ class ViewController: UIViewController,
   
   // Exercise 4: Implement applyNumKartsSetting to show the correct number of karts
   func applyNumKartsSetting(_ settings: [String : Any]) {
-    
+      // need to check if Int because string accepts Any
+      guard let numKarts = settings["numKarts"] as? Int else {
+          assertionFailure("not an integer")
+          return
+      }
+      // unhide karts according to number
+      kartView0.isHidden = numKarts < 2
+      kartView2.isHidden = numKarts < 3
   }
   
   // Exercise 5: Implement applyKartSizeSetting to set the correct kart size
   func applyKartSizeSetting(_ settings: [String : Any]) {
-    
+      guard let kartSizeMult = settings["kartSize"] as? Int else {
+          assertionFailure("not an integer")
+          return
+      }
+      // force-cast
+      // let kartSizeMult = settings["kartSize"] as! Int
+      
+      let kartSize = 1 + 0.05 * Double(kartSizeMult)
+      let transform = CGAffineTransformIdentity.scaledBy(x: kartSize, y: kartSize)
+      kartView0.transform = transform
+      kartView1.transform = transform
+      kartView2.transform = transform
   }
   
   // Exercise 6: Implement applySpeedMultiplierSetting to set the correct speed
   func applySpeedMultiplierSetting(_ settings: [String : Any]) {
-    
+      guard let kartSpeedMult = settings["speedMultiplier"] as? Int else {
+          assertionFailure("not an integer")
+          return
+      }
+      self.speedMultiplier = Double(kartSpeedMult)
   }
 }
 
